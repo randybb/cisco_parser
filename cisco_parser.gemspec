@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version = CiscoParser::VERSION
   spec.authors = ["Roman Priesol"]
   spec.email = ["roman@priesol.net"]
-  spec.summary = %q{TODO: Write a short summary. Required.}
-  spec.description = %q{TODO: Write a longer description. Optional.}
-  spec.homepage = ""
+  spec.summary = %q{A parser for Cisco show commands}
+  spec.description = %q{cisco_parser can take complete listing of show commands (e.g. from rancid) and parse only a particular output of a show command from it.}
+  spec.homepage = "http://github.com/randybb/cisco_parser"
   spec.license = "MIT"
 
   spec.files = `git ls-files -z`.split("\x0")
