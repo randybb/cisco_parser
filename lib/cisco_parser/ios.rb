@@ -14,7 +14,7 @@ module CiscoParser
       @commands
     end
 
-    def show_cdp(cmd = "show cdp neighbor details")
+    def show_cdp(cmd = "show cdp neighbors detail")
       parse_cdp(command_output cmd)
     end
 
