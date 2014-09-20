@@ -65,10 +65,10 @@ module CiscoParser
           neighbor[:capabilities] = match_plat_cap[:capabilities].strip
         end
 
-        match_ifs = /^Interface: (?<interface>.*),  Port ID \(outgoing port\): (?<ne_interface>.*)$/m.match(line)
+        match_ifs = /^Interface: (?<src_interface>.*),  Port ID \(outgoing port\): (?<interface>.*)$/m.match(line)
         if match_ifs
           neighbor[:interface] = match_ifs[:interface].strip
-          neighbor[:ne_interface] = match_ifs[:ne_interface].strip
+          neighbor[:src_interface] = match_ifs[:src_interface].strip
         end
 
         match_holdtime = /^Holdtime : (.*)$/m.match(line)
