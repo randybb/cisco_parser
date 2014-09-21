@@ -18,6 +18,10 @@ module CiscoParser
       parse_cdp(command_output cmd)
     end
 
+    def show_etherchannels(cmd = "show etherchannel summary")
+      parse_etherchannels(command_output cmd)
+    end
+
     def show_interfaces(cmd = "show configuration")
       parse_interfaces(command_output cmd)
     end
@@ -103,6 +107,60 @@ module CiscoParser
       end
       neighbors.push neighbor
       neighbors
+    end
+
+    def parse_etherchannels(stream)
+      pos = []
+      ports = []
+      stream.each_line do |line|
+        # this will match only interfaces bundled to Po...
+        next_ports_regex = /^[\s]+(?<ports>[\w\/]+\([\w]?\).*)[\s]+$/m.match(line)
+        unless next_ports_regex.nil?
+          next_ports_raw = next_ports_regex[:ports].split(' ')
+          next_ports_raw.each do |port_raw|
+            port_regex = /^(?<name>[\w\/]+)\((?<flag>[\w]*)\)$/m.match(port_raw)
+            ports << {name: port_regex[:name], flag_id: port_regex[:flag], flag_name: po_flag_value(port_regex[:flag])}
+          end
+        end
+        if /Po[\d]+/.match(line)
+          # ... and there are added to pos with previous po
+          unless ports.empty?
+            pos << {id: @po[:id], name: @po[:name], flags: @flags, protocol: @po[:protocol], ports: ports}
+            ports = []
+          end
+
+          @po = /^(?<id>[\d]+)[\s]+(?<name>Po[\d]+)\((?<flags>[\w]+)\)[\s]+(?<protocol>[\w-]+)[\s]+(?<ports>.*)[\s]+$/m.match(line)
+          unless @po.nil?
+            @flags = @po[:flags].scan(/./).map { |flag| {id: flag, name: po_flag_value(flag)} }
+            ports_raw = @po[:ports].split(" ")
+            ports_raw.each do |port_raw|
+              port_regex = /^(?<name>[\w\/]+)\((?<flag>[\w]*)\)$/m.match(port_raw)
+              ports << {name: port_regex[:name], flag_id: port_regex[:flag], flag_name: po_flag_value(port_regex[:flag])}
+            end
+          end
+        end
+      end
+      pos << {id: @po[:id], name: @po[:name], flags: @flags, protocol: @po[:protocol], ports: ports}
+      pos
+    end
+
+    def po_flag_value(string)
+      mapping = {
+          D: 'down',
+          P: 'bundled in port-channel',
+          I: 'stand-alone',
+          s: 'suspended',
+          H: 'Hot-standby (LACP only)',
+          R: 'Layer3',
+          S: 'Layer2',
+          U: 'in use',
+          f: 'failed to allocate aggregator',
+          M: 'not in use, minimum links not met',
+          u: 'unsuitable for bundling',
+          w: 'waiting to be aggregated',
+          d: 'default port'
+      }
+      mapping[:"#{string}"]
     end
 
     def parse_interfaces(stream)
