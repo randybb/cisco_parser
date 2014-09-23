@@ -72,7 +72,9 @@ module CiscoParser
         match_ifs = /^Interface: (?<src_interface>.*),  Port ID \(outgoing port\): (?<interface>.*)$/m.match(line)
         if match_ifs
           neighbor[:interface] = match_ifs[:interface].strip
+          neighbor[:interface_abbr] = abbr_ifs match_ifs[:interface].strip
           neighbor[:src_interface] = match_ifs[:src_interface].strip
+          neighbor[:src_interface_abbr] = abbr_ifs match_ifs[:src_interface].strip
         end
 
         match_holdtime = /^Holdtime : (.*)$/m.match(line)
@@ -107,6 +109,21 @@ module CiscoParser
       end
       neighbors.push neighbor
       neighbors
+    end
+
+    def abbr_ifs(string)
+      replacement_strings = [
+          %w(FastEthernet Fa),
+          %w(GigabitEthernet Gi),
+          %w(TenGigabitEthernet Te),
+          %w(Port-channel Po),
+          %w(Vlan Vl),
+          %w(LAGInterface LAG)
+      ]
+      replacement_strings.each do |from, to|
+        string.gsub!(from, to)
+      end
+      string
     end
 
     def parse_etherchannels(stream)
@@ -168,7 +185,10 @@ module CiscoParser
       interface = {}
       stream.each_line do |line|
         match_ifname = /^interface (.*)$/.match(line)
-        interface[:name] = match_ifname[1] if match_ifname
+        if match_ifname
+          interface[:name] = match_ifname[1]
+          interface[:name_abbr] = abbr_ifs match_ifname[1]
+        end
 
         match_desc = /^ description (.*)$/m.match(line)
         interface[:desc] = match_desc[1].strip if match_desc
