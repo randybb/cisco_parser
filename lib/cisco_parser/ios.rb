@@ -157,7 +157,11 @@ module CiscoParser
           end
         end
       end
-      pos << {id: @po[:id], name: @po[:name], flags: @flags, protocol: @po[:protocol], ports: ports}
+      begin
+        pos << {id: @po[:id], name: @po[:name], flags: @flags, protocol: @po[:protocol], ports: ports}
+      rescue
+        nil
+      end
       pos
     end
 
