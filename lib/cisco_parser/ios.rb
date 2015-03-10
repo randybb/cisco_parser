@@ -231,12 +231,12 @@ module CiscoParser
 
         match_dhcp_snooping = /^ ip dhcp snooping (\w+)( (.+))?$/.match(line)
         unless match_dhcp_snooping.nil?
-          @interface[:dhcp_snooping] = {} if @interface[:dhcp_snooping].nil?
+          interface[:dhcp_snooping] = {} if interface[:dhcp_snooping].nil?
           key = match_dhcp_snooping[1]
           puts key
           value = match_dhcp_snooping[3].nil? ? true : match_dhcp_snooping[3]
           puts value
-          @interface[:dhcp_snooping].merge! Hash[key, value]
+          interface[:dhcp_snooping].merge! Hash[key, value]
         end
 
         if /^!$/.match(line)
