@@ -223,11 +223,21 @@ module CiscoParser
           interface[:ipv4].push ipv4_address
         end
 
-        match_schut = /^ shutdown$/.match(line)
-        interface[:shutdown] = true if match_schut
+        match_shut = /^ shutdown$/.match(line)
+        interface[:shutdown] = true if match_shut
 
         match_poe = /^ power inline never$/.match(line)
         interface[:poe] = false if match_poe
+
+        match_dhcp_snooping = /^ ip dhcp snooping (\w+)( (.+))?$/.match(line)
+        unless match_dhcp_snooping.nil?
+          @interface[:dhcp_snooping] = {} if @interface[:dhcp_snooping].nil?
+          key = match_dhcp_snooping[1]
+          puts key
+          value = match_dhcp_snooping[3].nil? ? true : match_dhcp_snooping[3]
+          puts value
+          @interface[:dhcp_snooping].merge! Hash[key, value]
+        end
 
         if /^!$/.match(line)
           interfaces.push interface unless interface.empty?
