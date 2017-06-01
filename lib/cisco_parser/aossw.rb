@@ -85,13 +85,13 @@ module CiscoParser
 # Mbr
 # ID  Mac Address   Model                                  Pri Status
 # --- ------------- -------------------------------------- --- ---------------
-				#  1  9cdc71-f60f00 HP J9728A 2920-48G Switch              128 Commander
+#  1  9cdc71-f60f00 HP J9728A 2920-48G Switch              128 Commander
 				match_member = /^ (?<id>.{3}) (?<mac_address>.{13}) (?<model>.{38}) (?<priority>.{3}) (?<status>.{15})$/m.match(line)
 				if match_member
 					member = {}
 					member[:id] = match_member[:id].strip.to_i
 					if member[:id] != 0
-						member[:mac_address] = match_member[:mac_address].strip
+						member[:mac_address] = match_member[:mac_address].strip.gsub("-", "")
 						member[:model] = match_member[:model].strip
 						member[:part_number] = member[:model].match(/^HP (?<part_number>\w+) /)[:part_number]
 						member[:priority] = match_member[:priority].strip.to_i
