@@ -26,6 +26,10 @@ module CiscoParser
       parse_interfaces(command_output cmd)
     end
 
+    def show_if_transceiver(cmd = "show interface transceiver")
+      parse_if_transceiver(command_output cmd)
+    end
+
     protected
     def get_hostname
       /.*\n([\w-]+)[>#]\n.*/.match(@io)[1]
@@ -243,6 +247,37 @@ module CiscoParser
         end
       end
       interfaces
+    end
+#skfukrlusw02-01#show interface transceiver
+#If device is externally calibrated, only calibrated values are printed.
+#++ : high alarm, +  : high warning, -  : low warning, -- : low alarm.
+#NA or N/A: not applicable, Tx: transmit, Rx: receive.
+#mA: milliamperes, dBm: decibels (milliwatts).
+#
+#                                           Optical   Optical
+#           Temperature  Voltage  Current   Tx Power  Rx Power
+#Port       (Celsius)    (Volts)  (mA)      (dBm)     (dBm)
+#---------  -----------  -------  --------  --------  --------
+#Gi1/1/3      22.5       3.27       2.7      -6.3      -6.3
+#Gi1/1/4      21.7       3.30       2.5      -6.4      -5.8
+#Gi2/1/3      22.9       3.28       2.8      -5.8      -6.8
+#Gi2/1/4      23.2       3.27       2.5      -6.1      -6.2
+    def parse_if_transceiver(stream)
+      transceivers = []
+      stream.each_line do |line|
+        transceiver = {}
+        match_if_transceiver = /^(?<interface>[\w\/]+)[\s]+(?<temperature>[\d\.\-]+)[\s]+(?<voltage>[\d\.\-]+)[\s]+(?<current>[\d\.\-]+)[\s]+(?<tx_power>[\d\.\-]+)[\s]+(?<rx_power>[\d\.\-]+)$/m.match(line)
+        if match_if_transceiver
+          transceiver[:interface] = match_if_transceiver[:interface].strip
+          transceiver[:temperature] = match_if_transceiver[:temperature].to_f
+          transceiver[:voltage] = match_if_transceiver[:voltage].to_f
+          transceiver[:current] = match_if_transceiver[:current].to_f
+          transceiver[:tx_power] = match_if_transceiver[:tx_power].to_f
+          transceiver[:rx_power] = match_if_transceiver[:rx_power].to_f
+        end
+        transceivers.push transceiver unless transceiver.empty?
+      end
+      transceivers
     end
   end
 end
