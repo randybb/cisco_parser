@@ -266,7 +266,7 @@ module CiscoParser
       transceivers = []
       stream.each_line do |line|
         transceiver = {}
-        match_if_transceiver = /^(?<interface>[\w\/]+)[\s]+(?<temperature>[\d\.\-]+)[\s]+(?<voltage>[\d\.\-]+)[\s]+(?<current>[\d\.\-]+)[\s]+(?<tx_power>[\d\.\-]+)[\s]+(?<rx_power>[\d\.\-]+)$/m.match(line)
+        match_if_transceiver = /^(?<interface>[\w\/]+)[\s]+(?<temperature>[\d\.\-]+)[\s]+(?<voltage>[\d\.\-]+)[\s]+(?<current>[\d\.\-]+)[\s]+(?<tx_power>[\d\.\-]+)[\s]+(?<rx_power>[\d\.\-]+)\s+$/m.match(line)
         if match_if_transceiver
           transceiver[:interface] = match_if_transceiver[:interface].strip
           transceiver[:temperature] = match_if_transceiver[:temperature].to_f
