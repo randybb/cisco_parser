@@ -288,13 +288,13 @@ module CiscoParser
       versions = []
         version = {}
       stream.each_line do |line|
-        match_mac = /^Base Ethernet MAC Address\s+\: (.*)$/.match(line)
+        match_mac = /^Base [Ee]thernet MAC Address\s+\: (.*)$/.match(line)
         version[:mac_address] = match_mac[1] if match_mac
 
-        match_model = /^Model Number\s+\: (.*)$/.match(line)
+        match_model = /^Model [Nn]umber\s+\: (.*)$/.match(line)
         version[:model_number] = match_model[1] if match_model
 
-        match_serial_number = /^System Serial Number\s+\: (.*)$/.match(line)
+        match_serial_number = /^System [Ss]erial [Nn]umber\s+\: (.*)$/.match(line)
         version[:serial_number] = match_serial_number[1] if match_serial_number
 
         if /(^---------|Configuration register).*$/.match(line)
