@@ -30,6 +30,10 @@ module CiscoParser
       parse_if_transceiver(command_output cmd)
     end
 
+    def show_version(cmd = "show version")
+      parse_version(command_output cmd)
+    end
+
     protected
     def get_hostname
       /.*\n([\w-]+)[>#]\n.*/.match(@io)[1]
@@ -278,6 +282,27 @@ module CiscoParser
         transceivers.push transceiver unless transceiver.empty?
       end
       transceivers
+    end
+
+    def parse_version(stream)
+      versions = []
+        version = {}
+      stream.each_line do |line|
+        match_mac = /^Base Ethernet MAC Address\s+\: (.*)$/.match(line)
+        version[:mac_address] = match_mac[1] if match_mac
+
+        match_model = /^Model Number\s+\: (.*)$/.match(line)
+        version[:model_number] = match_model[1] if match_model
+
+        match_serial_number = /^System Serial Number\s+\: (.*)$/.match(line)
+        version[:serial_number] = match_serial_number[1] if match_serial_number
+
+        if /(^---------|Configuration register).*$/.match(line)
+          versions.push version unless version.empty?
+          version = {}
+        end
+      end
+      versions
     end
   end
 end

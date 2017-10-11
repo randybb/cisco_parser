@@ -159,7 +159,6 @@ module CiscoParser
       ap = {}
       stream.each_line do |line|
         line.strip!
-				ap line
         match_type_descr = /^NAME: \"(?<type>.*)\"\s+, DESCR: \"(?<description>.*)\"$/m.match(line)
         ap[:type] = match_type_descr[:type] if match_type_descr
         ap[:description] = match_type_descr[:description] if match_type_descr
