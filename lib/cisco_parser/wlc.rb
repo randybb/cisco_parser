@@ -18,6 +18,10 @@ module CiscoParser
       parse_accesspoints(command_output cmd)
     end
 
+    def show_ap_inventory(cmd = "show ap inventory all")
+      parse_ap_inventory(command_output cmd)
+    end
+
     protected
     def get_hostname
       /.*\n\(([\w-]+)\) [>#]\n.*/.match(@io)[1]
@@ -141,6 +145,36 @@ module CiscoParser
         if match_id
           aps.push ap unless ap.empty?
           ap = {}
+        end
+      end
+      aps
+    end
+
+#Inventory for skfukrluap21
+
+#NAME: "AP2800"    , DESCR: "Cisco Aironet 2800 Series (IEEE 802.11ac) Access Point"
+#PID: AIR-AP2802E-E-K9,  VID: V03,  SN: FGL2131A3JS
+		def parse_ap_inventory(stream)
+      aps = []
+      ap = {}
+      stream.each_line do |line|
+        line.strip!
+				ap line
+        match_type_descr = /^NAME: \"(?<type>.*)\"\s+, DESCR: \"(?<description>.*)\"$/m.match(line)
+        ap[:type] = match_type_descr[:type] if match_type_descr
+        ap[:description] = match_type_descr[:description] if match_type_descr
+
+        match_pid_vid_sn = /^PID: (?<product_id>.*),  VID: (?<version_id>.*),  SN: (?<serial_number>.*)$/m.match(line)
+        ap[:product_id] = match_pid_vid_sn[:product_id] if match_pid_vid_sn
+        ap[:version_id] = match_pid_vid_sn[:version_id] if match_pid_vid_sn
+        ap[:serial_number] = match_pid_vid_sn[:serial_number] if match_pid_vid_sn
+
+        match_hostname = /^Inventory for (.*)$/.match(line)
+        if match_hostname
+          aps.push ap unless ap.empty?
+          ap = {}
+          ap[:hostname] = match_hostname[1]
+
         end
       end
       aps
