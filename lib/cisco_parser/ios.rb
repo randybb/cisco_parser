@@ -36,7 +36,7 @@ module CiscoParser
 
     protected
     def get_hostname
-      /.*\n([\w-]+)[>#]\n.*/.match(@io)[1]
+      /.*\n([-\w]+)[>#]\n.*/.match(@io)[1]
     end
 
     def get_commands

@@ -13,22 +13,22 @@ module CiscoParser
     def commands
       @commands
     end
-	
+
 		def show_modules(cmd = "sh modules")
 			parse_modules(command_output cmd)
 		end
-		
+
 		def show_stacking(cmd = "sh stacking")
 			parse_stacking(command_output cmd)
 		end
-		
+
 		def show_transceivers(cmd = "sh interface transceiver")
 			parse_transceivers(command_output cmd)
 		end
 
     protected
     def get_hostname
-      /.*\n([\w-]+)[>#]\n.*/.match(@io)[1]
+      /.*\n([-\w]+)[>#]\n.*/.match(@io)[1]
     end
 
     def get_commands
@@ -51,10 +51,10 @@ module CiscoParser
       end
       cmd_output
     end
-	
+
 		def parse_modules(stream)
 			modules = []
-			
+
 			stream.each_line do |line|
 #  ID     Slot     Module Description                  Serial Number    Status
 #  ------ -------- ----------------------------------- ---------------- -------
@@ -69,18 +69,18 @@ module CiscoParser
 						mod[:part_number] = mod[:description].match(/^HP (?<part_number>\w+) /)[:part_number]
 						mod[:serial_number] = match_module[:serial_number].strip
 						mod[:status] = match_module[:status].strip
-						
+
 						modules.push mod
 					end
 				end
 			end
 			modules
 		end
-		
+
 		def parse_stacking(stream)
 			members = []
 			member = {}
-			
+
 			stream.each_line do |line|
 # Mbr
 # ID  Mac Address   Model                                  Pri Status
@@ -96,14 +96,14 @@ module CiscoParser
 						member[:part_number] = member[:model].match(/^HP (?<part_number>\w+) /)[:part_number]
 						member[:priority] = match_member[:priority].strip.to_i
 						member[:status] = match_member[:status].strip
-						
+
 						members.push member
 					end
 				end
 			end
 			members
 		end
-	
+
 		def parse_transceivers(stream)
 			transceivers = []
 
@@ -121,12 +121,42 @@ module CiscoParser
 					transceiver[:part_number] = match_transceiver[:product_number].strip
 					transceiver[:serial_number] = match_transceiver[:serial_number].strip
 					# transceiver[:part_number] = match_transceiver[:part_number].strip
-					
+
 					transceivers.push transceiver
 					transceivers = [] if transceiver[:port] == "-------"
 				end
 			end
 			transceivers
+
+		def parse_powersupply(stream)
+			power = []
+
+			stream.each_line do |line|
+#  Member  PS#   Model     Serial      State           AC/DC  + V        Wattage   Max
+#  ------- ----- --------- ----------- --------------- ----------------- --------- ------
+#  1       1     JL085A    CN77GZ82MT  Powered         AC 120V/240V        74       250
+#  1       2                           Not Present     -- ---------         0         0
+#  2       1                           Not Present     -- ---------         0         0
+#  2       2     JL085A    CN7AGZ80VW  Powered         AC 120V/240V        73       250
+
+				match_psu = /^ (?<member>.{7}) (?<psu>.{5}) (?<mode>.{9}) (?<serial>.{11}) (?<state>.{15} (?<ac_dc_v>.{17}) (?<wattage>.{9}) (?<max>.{6}))$/m.match(line)
+				if match_psu
+					psu = {}
+					psu[:member] = match_psu[:member].strip
+					psu[:psu] = match_psu[:psu].strip
+					psu[:part_number] = match_psu[:model].strip
+					psu[:serial_number] = match_psu[:serial].strip
+					psu[:state] = match_psu[:state].strip
+					psu[:ac_dc] = match_psu[:ac_dc_v].strip.split[0]
+					psu[:voltage] = match_psu[:ac_dc_v].strip.split[1]
+					psu[:wattage] = match_psu[:wattage].strip
+					psu[:wattage_max] = match_psu[:max].strip
+
+					psus.push psu
+					psus = [] if psu[:state] == "Not Present"
+				end
+			end
+			psus
 		end
   end
 end
