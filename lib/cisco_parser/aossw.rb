@@ -127,6 +127,7 @@ module CiscoParser
 				end
 			end
 			transceivers
+    end
 
 		def parse_powersupply(stream)
 			power = []
