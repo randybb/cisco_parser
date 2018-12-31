@@ -28,13 +28,13 @@ module CiscoParser
 
     protected
     def get_hostname
-      /.*\n([-\w]+)[>#]\n.*/.match(@io)[1]
+      /.*\n([-\w]+)[>#] *\n.*/.match(@io)[1]
     end
 
     def get_commands
       commands = []
       @io.each_line do |line|
-        command = /^#{hostname}[>#]([\w |]+)$/m.match(line)
+        command = /^#{hostname}[>#] *([\w |]+)$/m.match(line)
         commands.push command[1] if command
       end
       commands
